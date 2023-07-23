@@ -13,51 +13,47 @@ import (
 )
 
 const (
-	screenWidth  = 320
-	screenHeight = 240
-	maxAngle     = 256
+	screenWidth  = 1024
+	screenHeight = 800
+	squareDir    = "square.png"
 )
 
 var (
 	ebitenImage *ebiten.Image
+	op          *ebiten.DrawImageOptions
 )
 
 type Game struct {
-	// touchIDs []ebiten.TouchID
-	// sprites  Sprites
-	// op     ebiten.DrawImageOptions
-	// inited bool
 }
 
 func init() {
-	// output image will live here
-	// x1,y1,  x2,y2 of background rectangle
-	//  R, G, B, Alpha
-	// backfill entire background surface with color mygreen
-	//  geometry of 2nd rectangle which we draw atop above rectangle
-	// create a red rectangle atop the green surface
-	// ... now lets save output image
 	drawRectangle()
 
 	path, err := os.Getwd()
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(path) // for example /home/user
 
-	filePath := fmt.Sprintf("%s/two_rectangles.png", path)
+	filePath := fmt.Sprintf("%s/%s", path, squareDir)
 
 	f, err := os.Open(filePath)
 	if err != nil {
 		log.Println(err)
 	}
 	defer f.Close()
-	image, _, err := image.Decode(f)
+	img, _, err := image.Decode(f)
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Print(image)
 
+	origEbitenImage := ebiten.NewImageFromImage(img)
+
+	s := origEbitenImage.Bounds().Size()
+	ebitenImage = ebiten.NewImage(s.X, s.Y)
+
+	op = &ebiten.DrawImageOptions{}
+	op.ColorScale.ScaleAlpha(0.5)
+	ebitenImage.DrawImage(origEbitenImage, op)
 }
 
 func drawRectangle() (*os.File, error) {
@@ -65,19 +61,13 @@ func drawRectangle() (*os.File, error) {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(path) // for example /home/user
 
-	new_png_file := fmt.Sprintf("%s/two_rectangles.png", path)
+	new_png_file := fmt.Sprintf("%s/%s", path, squareDir)
 
-	myimage := image.NewRGBA(image.Rect(0, 0, 220, 220))
-	mygreen := color.RGBA{0, 100, 0, 255}
+	myimage := image.NewRGBA(image.Rect(0, 0, 10, 10))
+	black := color.RGBA{255, 255, 255, 255}
 
-	draw.Draw(myimage, myimage.Bounds(), &image.Uniform{mygreen}, image.ZP, draw.Src)
-
-	red_rect := image.Rect(60, 80, 120, 160)
-	myred := color.RGBA{200, 0, 0, 255}
-
-	draw.Draw(myimage, red_rect, &image.Uniform{myred}, image.ZP, draw.Src)
+	draw.Draw(myimage, myimage.Bounds(), &image.Uniform{black}, image.ZP, draw.Src)
 
 	myfile, err := os.Create(new_png_file)
 	if err != nil {
@@ -92,7 +82,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(screen, &ebiten.DrawImageOptions{})
+	screen.DrawImage(ebitenImage, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWitdth, screenHeight int) {
