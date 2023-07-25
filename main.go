@@ -15,66 +15,66 @@ import (
 const (
 	screenWidth  = 1024
 	screenHeight = 800
-	squareDir    = "square.png"
+	squareFile   = "square.png"
 )
 
 var (
-	ebitenImage *ebiten.Image
-	op          *ebiten.DrawImageOptions
+	ebitenImg      *ebiten.Image
+	drawImgOptions *ebiten.DrawImageOptions
 )
 
 type Game struct {
 }
 
 func init() {
-	drawRectangle()
+	createSnakePng()
 
-	path, err := os.Getwd()
+	squareDir := getSquareDir()
+
+	f, err := os.Open(squareDir)
 	if err != nil {
-		log.Println(err)
-	}
-
-	filePath := fmt.Sprintf("%s/%s", path, squareDir)
-
-	f, err := os.Open(filePath)
-	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 	defer f.Close()
 	img, _, err := image.Decode(f)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 
-	origEbitenImage := ebiten.NewImageFromImage(img)
+	origEbitenImg := ebiten.NewImageFromImage(img)
 
-	s := origEbitenImage.Bounds().Size()
-	ebitenImage = ebiten.NewImage(s.X, s.Y)
+	position := origEbitenImg.Bounds().Size()
+	ebitenImg = ebiten.NewImage(position.X, position.Y)
 
-	op = &ebiten.DrawImageOptions{}
-	op.ColorScale.ScaleAlpha(0.5)
-	ebitenImage.DrawImage(origEbitenImage, op)
+	drawImgOptions = &ebiten.DrawImageOptions{}
+	drawImgOptions.ColorScale.ScaleAlpha(0.5)
+	ebitenImg.DrawImage(origEbitenImg, drawImgOptions)
 }
 
-func drawRectangle() (*os.File, error) {
-	path, err := os.Getwd()
-	if err != nil {
-		log.Println(err)
-	}
-
-	new_png_file := fmt.Sprintf("%s/%s", path, squareDir)
+func createSnakePng() (*os.File, error) {
+	squareDir := getSquareDir()
 
 	myimage := image.NewRGBA(image.Rect(0, 0, 10, 10))
 	black := color.RGBA{255, 255, 255, 255}
 
 	draw.Draw(myimage, myimage.Bounds(), &image.Uniform{black}, image.ZP, draw.Src)
 
-	myfile, err := os.Create(new_png_file)
+	myfile, err := os.Create(squareDir)
 	if err != nil {
 		panic(err)
 	}
-	png.Encode(myfile, myimage) // output file /tmp/two_rectangles.png
+	png.Encode(myfile, myimage)
 	return myfile, err
+}
+
+func getSquareDir() string {
+	path, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	squareDir := fmt.Sprintf("%s/%s", path, squareFile)
+	return squareDir
 }
 
 func (g *Game) Update() error {
@@ -82,11 +82,11 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(ebitenImage, op)
+	screen.DrawImage(ebitenImg, drawImgOptions)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWitdth, screenHeight int) {
-	return 500, 240
+	return outsideWidth, outsideHeight
 }
 
 func main() {
