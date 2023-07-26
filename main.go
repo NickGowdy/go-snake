@@ -108,13 +108,12 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	w, h := newEbitenImg.Bounds().Dx(), newEbitenImg.Bounds().Dy()
-	// todo: find centre
+
 	xMiddle := screenWidth / 2
 	yMiddle := screenHeight / 2
 
 	g.op.GeoM.Reset()
 	g.op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
-	g.op.GeoM.Translate(float64(w)/2, float64(h)/2)
 	g.op.GeoM.Translate(float64(xMiddle), float64(yMiddle))
 	screen.DrawImage(newEbitenImg, &g.op)
 }
