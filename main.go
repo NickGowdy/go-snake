@@ -7,12 +7,18 @@ import (
 	"image/draw"
 	"image/png"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 const (
+	North = iota + 1
+	East
+	South
+	West
 	screenWidth  = 320
 	screenHeight = 240
 	snakeWidth   = 10
@@ -23,6 +29,7 @@ const (
 var (
 	newEbitenImg   *ebiten.Image
 	drawImgOptions *ebiten.DrawImageOptions
+	direction      int
 )
 
 type Game struct {
@@ -83,25 +90,34 @@ func init() {
 	newEbitenImg.DrawImage(origEbitenImg, drawImgOptions)
 }
 
-// func (g *Game) init() {
-// 	defer func() {
-// 		g.inited = true
-// 	}()
+func (g *Game) init() {
+	defer func() {
+		g.inited = true
+	}()
 
-// 	w, h := newEbitenImg.Bounds().Dx(), newEbitenImg.Bounds().Dy()
-// 	x, y := rand.Intn(screenWidth-w), rand.Intn(screenHeight-h)
-// 	vx, vy := 2*rand.Intn(2)-1, 2*rand.Intn(2)-1
+	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-// 	fmt.Print(x)
-// 	fmt.Print(y)
-// 	fmt.Print(vx)
-// 	fmt.Print(vy)
-// }
+	min := North
+	max := West
+	direction = rand.Intn(max-min) + min
+}
 
 func (g *Game) Update() error {
-	// if !g.inited {
-	// 	g.init()
-	// }
+	if !g.inited {
+		g.init()
+	}
+
+	w, h := newEbitenImg.Bounds().Dx(), newEbitenImg.Bounds().Dy()
+	fmt.Print(w)
+	fmt.Print(h)
+
+	switch direction {
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+
+	}
 
 	return nil
 }
