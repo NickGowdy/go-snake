@@ -13,48 +13,27 @@ import (
 )
 
 const (
-	screenWidth  = 1024
-	screenHeight = 800
+	screenWidth  = 320
+	screenHeight = 240
+	snakeWidth   = 10
+	snakeHeight  = 10
 	squareFile   = "square.png"
 )
 
 var (
-	ebitenImg      *ebiten.Image
+	newEbitenImg   *ebiten.Image
 	drawImgOptions *ebiten.DrawImageOptions
 )
 
 type Game struct {
-}
-
-func init() {
-	createSnakePng()
-
-	squareDir := getSquareDir()
-
-	f, err := os.Open(squareDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	img, _, err := image.Decode(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	origEbitenImg := ebiten.NewImageFromImage(img)
-
-	position := origEbitenImg.Bounds().Size()
-	ebitenImg = ebiten.NewImage(position.X, position.Y)
-
-	drawImgOptions = &ebiten.DrawImageOptions{}
-	drawImgOptions.ColorScale.ScaleAlpha(0.5)
-	ebitenImg.DrawImage(origEbitenImg, drawImgOptions)
+	op     ebiten.DrawImageOptions
+	inited bool
 }
 
 func createSnakePng() (*os.File, error) {
 	squareDir := getSquareDir()
 
-	myimage := image.NewRGBA(image.Rect(0, 0, 10, 10))
+	myimage := image.NewRGBA(image.Rect(0, 0, snakeWidth, snakeHeight))
 	black := color.RGBA{255, 255, 255, 255}
 
 	draw.Draw(myimage, myimage.Bounds(), &image.Uniform{black}, image.ZP, draw.Src)
@@ -77,21 +56,77 @@ func getSquareDir() string {
 	return squareDir
 }
 
+// init gets png file used for the game and decodes it to be used by
+// var newEbitenImg and drawImgOptions. These vars are modified throughout
+// lifetime of the game
+func init() {
+	createSnakePng()
+
+	squareDir := getSquareDir()
+
+	f, err := os.Open(squareDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	img, _, err := image.Decode(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	origEbitenImg := ebiten.NewImageFromImage(img)
+	position := origEbitenImg.Bounds().Size()
+	newEbitenImg = ebiten.NewImage(position.X, position.Y)
+
+	drawImgOptions = &ebiten.DrawImageOptions{}
+	drawImgOptions.ColorScale.ScaleAlpha(0.5)
+	newEbitenImg.DrawImage(origEbitenImg, drawImgOptions)
+}
+
+// func (g *Game) init() {
+// 	defer func() {
+// 		g.inited = true
+// 	}()
+
+// 	w, h := newEbitenImg.Bounds().Dx(), newEbitenImg.Bounds().Dy()
+// 	x, y := rand.Intn(screenWidth-w), rand.Intn(screenHeight-h)
+// 	vx, vy := 2*rand.Intn(2)-1, 2*rand.Intn(2)-1
+
+// 	fmt.Print(x)
+// 	fmt.Print(y)
+// 	fmt.Print(vx)
+// 	fmt.Print(vy)
+// }
+
 func (g *Game) Update() error {
+	// if !g.inited {
+	// 	g.init()
+	// }
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(ebitenImg, drawImgOptions)
+	w, h := newEbitenImg.Bounds().Dx(), newEbitenImg.Bounds().Dy()
+	// todo: find centre
+	xMiddle := screenWidth / 2
+	yMiddle := screenHeight / 2
+
+	g.op.GeoM.Reset()
+	g.op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
+	g.op.GeoM.Translate(float64(w)/2, float64(h)/2)
+	g.op.GeoM.Translate(float64(xMiddle), float64(yMiddle))
+	screen.DrawImage(newEbitenImg, &g.op)
 }
 
-func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWitdth, screenHeight int) {
-	return outsideWidth, outsideHeight
+func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return screenWidth, screenHeight
 }
 
 func main() {
-	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetWindowSize(screenWidth*2, screenHeight*2)
+	ebiten.SetWindowTitle("GO SNAKE")
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
