@@ -30,6 +30,8 @@ var (
 	newEbitenImg   *ebiten.Image
 	drawImgOptions *ebiten.DrawImageOptions
 	direction      int
+	currentX       int
+	currentY       int
 )
 
 type Game struct {
@@ -103,35 +105,44 @@ func (g *Game) init() {
 }
 
 func (g *Game) Update() error {
-	if !g.inited {
-		g.init()
-	}
-
-	w, h := newEbitenImg.Bounds().Dx(), newEbitenImg.Bounds().Dy()
-	fmt.Print(w)
-	fmt.Print(h)
 
 	switch direction {
 	case 1:
+		currentY++
 	case 2:
+		currentX++
 	case 3:
+		currentY--
 	case 4:
-
+		currentX++
 	}
 
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+
 	w, h := newEbitenImg.Bounds().Dx(), newEbitenImg.Bounds().Dy()
-
-	xMiddle := screenWidth / 2
-	yMiddle := screenHeight / 2
-
 	g.op.GeoM.Reset()
-	g.op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
-	g.op.GeoM.Translate(float64(xMiddle), float64(yMiddle))
+
+	if !g.inited {
+
+		xMiddle := screenWidth / 2
+		yMiddle := screenHeight / 2
+		currentX = xMiddle
+		currentY = yMiddle
+
+		g.op.GeoM.Translate(float64(xMiddle), float64(yMiddle))
+	} else {
+		g.op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
+		g.op.GeoM.Translate(float64(currentX), float64(currentY))
+	}
+
 	screen.DrawImage(newEbitenImg, &g.op)
+
+	if !g.inited {
+		g.init()
+	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
