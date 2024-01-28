@@ -137,7 +137,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
 		g.op.GeoM.Translate(float64(currentX), float64(currentY))
 	}
-
+	
 	screen.DrawImage(newEbitenImg, &g.op)
 
 	if !g.inited {
